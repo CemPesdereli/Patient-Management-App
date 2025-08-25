@@ -1,5 +1,6 @@
 package com.cem.pm.patientservice.service;
 
+import com.cem.pm.patientservice.dto.PatientRequestDTO;
 import com.cem.pm.patientservice.dto.PatientResponseDTO;
 import com.cem.pm.patientservice.mapper.PatientMapper;
 import com.cem.pm.patientservice.model.Patient;
@@ -22,6 +23,10 @@ public class PatientService {
         return patients.stream()
                 .map(PatientMapper::toDTO)
                 .collect(Collectors.toList());
+    }
+
+    public PatientResponseDTO createPatient(PatientRequestDTO patientRequestDTO) {
+        
     }
 
 }
