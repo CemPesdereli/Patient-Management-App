@@ -4,6 +4,7 @@ import com.cem.pm.patientservice.dto.PatientRequestDTO;
 import com.cem.pm.patientservice.dto.PatientResponseDTO;
 import com.cem.pm.patientservice.exception.EmailAlreadyExistsException;
 import com.cem.pm.patientservice.exception.PatientNotFoundException;
+import com.cem.pm.patientservice.grpc.BillingServiceGrpcClient;
 import com.cem.pm.patientservice.mapper.PatientMapper;
 import com.cem.pm.patientservice.model.Patient;
 import com.cem.pm.patientservice.repository.PatientRepository;
@@ -20,6 +21,7 @@ import java.util.stream.Collectors;
 public class PatientService {
 
     private final PatientRepository patientRepository;
+    private final BillingServiceGrpcClient billingServiceGrpcClient;
 
     public List<PatientResponseDTO> getPatients() {
         List<Patient> patients = patientRepository.findAll();
@@ -34,12 +36,13 @@ public class PatientService {
             throw new EmailAlreadyExistsException("A patient with the email " + patientRequestDTO.getEmail() + " already exists");
         }
         Patient newPatient = patientRepository.save(PatientMapper.toModel(patientRequestDTO));
+        billingServiceGrpcClient.createBillingAccount(newPatient.getId().toString(), newPatient.getName(), newPatient.getEmail());
         return PatientMapper.toDTO(newPatient);
     }
 
     public PatientResponseDTO updatePatient(UUID id, PatientRequestDTO patientRequestDTO) {
         Patient patient = patientRepository.findById(id)
-                .orElseThrow(() -> new PatientNotFoundException("Patient not found with ID: "+id));
+                .orElseThrow(() -> new PatientNotFoundException("Patient not found with ID: " + id));
 
         if (patientRepository.existsByEmailAndIdNot(patientRequestDTO.getEmail(), id)) {
             throw new EmailAlreadyExistsException("A patient with the email " + patientRequestDTO.getEmail() + " already exists");
